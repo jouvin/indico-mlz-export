@@ -5,7 +5,7 @@ from io import StringIO
 from getpass import getpass
 
 import requests
-import simplejson as json
+import json
 from lxml import html
 from requests_oauthlib import OAuth2Session
 
