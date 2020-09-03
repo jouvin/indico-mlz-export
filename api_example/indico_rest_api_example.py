@@ -3,6 +3,7 @@ import argparse
 import sys
 from io import StringIO
 from getpass import getpass
+from pprint import PrettyPrinter
 
 import requests
 import json
@@ -23,6 +24,7 @@ target_verify = True
 # OAuth endpoints given in the GitHub API documentation
 authorization_base_url = target_base + 'oauth/authorize'
 token_url = target_base + 'oauth/token'
+auth_provider = "ldap"
 
 
 def getsession(username, password):
@@ -42,7 +44,7 @@ def getsession(username, password):
     res = s.post(
         res.url,
         data={
-            '_provider': 'ldap', #whatever you use as auth providers
+            '_provider': auth_provider, #whatever you use as auth providers
             'username': username,
             'password': password,
             'csrf_token': '00000000-0000-0000-0000-000000000000'
@@ -60,7 +62,7 @@ def getsession(username, password):
     res = s.post(
         res.url,
         data={
-            '_provider': 'ldap', # what you use as auth provider
+            '_provider': auth_provider, # what you use as auth provider
             'username': username,
             'password': password,
             'csrf_token': csrf
@@ -90,29 +92,23 @@ if __name__ == '__main__':
             raise Exception('Password must not be empty')
 
     indico = getsession(args.username, args.password)
-    if not args.flat:
+
+    if args.flat:
+        # Fetch all registrants (flattend format with ids)
+        registrants_base = 'mlz/export/{.confid}/registrants_flat'.format(args)
+        #registrants_base = 'api/events/{.confid}/registrants'.format(args)
+    else:
         # Fetch all registrants
         registrants_base = 'mlz/export/{.confid}/registrants'.format(args)
         #registrants_base = 'api/events/{.confid}/registrants'.format(args)
-        r = indico.get(target_base + registrants_base)
-        registrants = json.loads(r.content)
 
-        for r in registrants:
-            registrant_base = registrants_base + '/{registrant_id}'.format(**r)
-            res = indico.get(target_base + registrant_base)
-            print (res.content)
+    r = indico.get(target_base + registrants_base)
+    registrants = json.loads(r.content)
 
-    if args.flat:
-        # Fetch all registrants (flattend format with ids
-        registrants_base = 'mlz/export/{.confid}/registrants_flat'.format(args)
+    pp = PrettyPrinter(indent=4)
 
-        #registrants_base = 'api/events/{.confid}/registrants'.format(args)
-        r = indico.get(target_base + registrants_base)
-        registrants = json.loads(r.content)
-
-
-        for r in registrants:
-            registrant_base = registrants_base + '/{registrant_id}'.format(**r)
-            res = indico.get(target_base + registrant_base)
-            print (res.content)
+    for r in registrants:
+        registrant_base = registrants_base + '/{registrant_id}'.format(**r)
+        res = indico.get(target_base + registrant_base)
+        pp.pprint(json.loads(res.content))
 
