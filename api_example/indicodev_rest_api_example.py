@@ -2,6 +2,7 @@
 import argparse
 import sys
 from io import StringIO
+from getpass import getpass
 
 import requests
 import simplejson as json
@@ -77,11 +78,16 @@ def getsession(username, password):
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('username')
-    ap.add_argument('password')
+    ap.add_argument('--username', required=True, help="Indico user")
+    ap.add_argument('--password', default=None, help="Indico password (if not specified, will be asked")
     ap.add_argument('--flat', type=bool, default=False)
     ap.add_argument('--confid', type=int, default=56)
     args = ap.parse_args()
+
+    if not args.password:
+        args.password = getpass(prompt=f"Password for {args.username}? ")
+        if len(args.password) == 0:
+            raise Exception('Password must not be empty')
 
     indico = getsession(args.username, args.password)
     if not args.flat:
