@@ -26,6 +26,24 @@ authorization_base_url = target_base + 'oauth/authorize'
 token_url = target_base + 'oauth/token'
 auth_provider = "ldap"
 
+HTTP_STATUS_OK = 200
+HTTP_STATUS_REDIRECTED = 302
+HTTP_STATUS_FORBIDDEN = 403
+HTTP_STATUS_NOT_FOUND = 404
+
+
+def handle_url(res, **kwds):
+    if res.status_code == HTTP_STATUS_REDIRECTED:
+        if res.headers['Location'].startswith(redirect_uri):
+            res.url = res.headers['Location']
+            del res.headers['Location']
+        return res
+    elif res.status_code == HTTP_STATUS_OK:
+        print('ERROR: userid or password incorrect')
+        exit(2)
+    else:
+        raise Exception(f'Error connecting to Indico')
+
 
 def getsession(username, password):
     indico = OAuth2Session(client_id, scope=scopes, redirect_uri=redirect_uri)
@@ -40,24 +58,27 @@ def getsession(username, password):
         headers={
             'X-CSRF-Token': '00000000-0000-0000-0000-000000000000'
         })
+    if res.status_code == HTTP_STATUS_OK:
+        auth_actual_url = res.url
+    else:
+        raise Exception(f'Failed to connect to authorization URL ({authorization_url})')
 
     res = s.post(
-        res.url,
+        auth_actual_url,
         data={
             '_provider': auth_provider, #whatever you use as auth providers
             'username': username,
             'password': password,
             'csrf_token': '00000000-0000-0000-0000-000000000000'
         })
+    if res.status_code == HTTP_STATUS_NOT_FOUND:
+        print(f'ERROR: authorization provider ({auth_provider}) not found')
+        exit(1)
+    elif res.status_code != HTTP_STATUS_OK:
+        raise Exception(f'Failed to authenticate against {auth_actual_url}')
 
     tree = html.parse(StringIO(res.text))
     csrf = tree.xpath('//*[@id="csrf_token"]')[0].value
-
-    def handle_url(res, **kwds):
-        if res.headers['Location'].startswith(redirect_uri):
-            res.url = res.headers['Location']
-            del res.headers['Location']
-        return res
 
     res = s.post(
         res.url,
