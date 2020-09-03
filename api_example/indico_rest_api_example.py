@@ -24,7 +24,7 @@ target_verify = True
 # OAuth endpoints given in the GitHub API documentation
 authorization_base_url = target_base + 'oauth/authorize'
 token_url = target_base + 'oauth/token'
-auth_provider = "ldap"
+auth_provider = "indico"
 
 HTTP_STATUS_OK = 200
 HTTP_STATUS_REDIRECTED = 302
