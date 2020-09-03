@@ -11,13 +11,13 @@ from requests_oauthlib import OAuth2Session
 #
 
 # Credentials you get from registering a new application
-client_id = 'eee44dff-b924-497e-803b-e432d95d37ce'
-client_secret = 'd3a3a448-838c-4b60-b80e-3bcff9b95bc9'
+client_id = '009eb4bc-0b3f-49e7-b6d8-433799deef97'
+client_secret = 'c6e01de7-65be-4ec7-bdd3-79b73502849b'
 
 scopes = ['registrants', 'read:legacy_api', 'read:user']
 redirect_uri = 'https://localhost/'
 
-target_base = 'https://indico.ijclab.in2p3.fr/'
+target_base = 'https://indico-dev.lal.in2p3.fr/'
 target_verify = True
 # OAuth endpoints given in the GitHub API documentation
 authorization_base_url = target_base + 'oauth/authorize'
@@ -41,7 +41,7 @@ def getsession(username, password):
     res = s.post(
         res.url,
         data={
-            '_provider': 'ldap', #whatever you use as auth providers
+            '_provider': 'ylal', #whatever you use as auth providers
             'username': username,
             'password': password,
             'csrf_token': '00000000-0000-0000-0000-000000000000'
@@ -59,7 +59,7 @@ def getsession(username, password):
     res = s.post(
         res.url,
         data={
-            '_provider': 'ldap', # what you use as auth provider
+            '_provider': 'ylal', # what you use as auth provider
             'username': username,
             'password': password,
             'csrf_token': csrf
