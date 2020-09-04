@@ -106,11 +106,17 @@ def getsession(config, username, password, auth_provider):
     tree = html.parse(StringIO(res.text))
     csrf = tree.xpath('//*[@id="csrf_token"]')[0].value
 
+    # Internal/default auth provider is using identifier instead of username for the userid
+    if auth_provider == 'indico':
+        user_field = 'identifier'
+    else:
+        user_field = 'username'
+
     res = s.post(
         res.url,
         data={
             '_provider': auth_provider, # what you use as auth provider
-            'username': username,
+            user_field: username,
             'password': password,
             'csrf_token': csrf
         },
