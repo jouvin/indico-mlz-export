@@ -165,7 +165,9 @@ def main():
     for r in registrants:
         registrant_base = registrants_base + '/{registrant_id}'.format(**r)
         res = indico.get(config['indico_url'] + registrant_base)
-        pp.pprint(json.loads(res.content))
+        registrant_data = json.loads(res.content)
+        print(f"##### Data for participant {registrant_data['full_name']} ({registrant_data['personal_data']['affiliation']})  #####")
+        pp.pprint(registrant_data)
 
 
 if __name__ == '__main__':
